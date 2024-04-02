@@ -96,6 +96,9 @@ GameObject:
   - component: {fileID: 8952767965191963921}
   - component: {fileID: 2962020085457808494}
   - component: {fileID: 794478133853059803}
+  - component: {fileID: 155862675049770765}
+  - component: {fileID: 7695795514619950413}
+  - component: {fileID: 2131181770000259112}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -138,6 +141,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 8952767965191963921}
   - {fileID: 794478133853059803}
+  - {fileID: 155862675049770765}
 --- !u!114 &8952767965191963921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -170,8 +174,8 @@ SphereCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_ProvidesContacts: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 0.1
   m_Center: {x: 0, y: 0, z: 0}
@@ -187,3 +191,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc99844026842964091ecee5846f2fef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &155862675049770765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8615158807602062230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1039544458, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Config: 3
+  BroadRadius: 0.12
+  Offset: {x: 0, y: 0, z: 0}
+  GizmosColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  Hitboxes:
+  - {fileID: 7695795514619950413}
+--- !u!114 &7695795514619950413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8615158807602062230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 2
+  SphereRadius: 0.12
+  CapsuleRadius: 0
+  BoxExtents: {x: 0, y: 0, z: 0}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0, z: 0}
+  Root: {fileID: 155862675049770765}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+--- !u!114 &2131181770000259112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8615158807602062230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -49887739, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BVHDepth: 0
+  BVHNodes: 0
+  TotalHitboxes: 0
