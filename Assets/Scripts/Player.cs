@@ -54,8 +54,8 @@ public class Player : NetworkBehaviour
 
         if (isDead && respawnTime.ExpiredOrNotRunning(Runner))
         {
-            if (HasStateAuthority)
-                RPC_SetObjectState(true);
+            //if (HasStateAuthority)
+            //    RPC_SetObjectState(true);
             isDead = false;
         }
     }
@@ -77,11 +77,11 @@ public class Player : NetworkBehaviour
                 case nameof(spawnedProjectile):
                     _material.color = Color.white;
                     break;
-                //case nameof(isDead):
-                //    {
-                //        SetObjectState(!isDead);
-                //        break;
-                //    }
+                case nameof(isDead):
+                    {
+                        SetObjectState(!isDead);
+                        break;
+                    }
             }
         }
 
@@ -91,8 +91,8 @@ public class Player : NetworkBehaviour
     public void OnTakeDamage()
     {
         respawnTime = TickTimer.CreateFromSeconds(Runner, 2f);
-        if (HasStateAuthority)
-            RPC_SetObjectState(false);
+        //if (HasStateAuthority)
+        //    RPC_SetObjectState(false);
         isDead = true;
     }
 
