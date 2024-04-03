@@ -1,4 +1,5 @@
 using Fusion;
+using TMPro;
 using UnityEngine;
 
 public class Player : NetworkBehaviour
@@ -10,6 +11,7 @@ public class Player : NetworkBehaviour
 
     public Material _material;
 
+    private TextMeshProUGUI _message;
     private ChangeDetector _changeDetector;
     private NetworkCharacterController _cc;
     private Vector3 _forward;
@@ -58,7 +60,7 @@ public class Player : NetworkBehaviour
     {
         if (Object.HasInputAuthority && Input.GetKeyDown(KeyCode.R))
         {
-
+            RPC_SendMessage("Testing");
         }
     }
 
@@ -75,5 +77,31 @@ public class Player : NetworkBehaviour
         }
 
         _material.color = Color.Lerp(_material.color, Color.blue, Time.deltaTime);
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+    public void RPC_SendMessage(string message, RpcInfo info = default)
+    {
+        RPC_RelayMessage(message, info.Source);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+    public void RPC_RelayMessage(string message, PlayerRef messageSource)
+    {
+        if (_message == null)
+        {
+            _message = UIManager.Instance.OutputText;
+        }
+
+        if (messageSource == Runner.LocalPlayer)
+        {
+            message = $"You said: {message}\n";
+        }
+        else
+        {
+            message = $"Some other player said: {message}\n";
+        }
+
+        _message.text += message;
     }
 }
