@@ -48,7 +48,7 @@ public class Player : NetworkBehaviour
                         (runner, o) =>
                         {
                             // Initialize the Ball before synchronizing it.
-                            o.GetComponent<Ball>().Init();
+                            o.GetComponent<Ball>().Init(this);
                         });
                     spawnedProjectile = !spawnedProjectile;
                 }
@@ -77,6 +77,11 @@ public class Player : NetworkBehaviour
         }
 
         _material.color = Color.Lerp(_material.color, Color.blue, Time.deltaTime);
+    }
+
+    public void OnTakeDamage()
+    {
+        Runner.Despawn(Object);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
