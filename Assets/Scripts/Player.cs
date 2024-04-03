@@ -1,3 +1,4 @@
+using System.Collections;
 using Fusion;
 using TMPro;
 using UnityEngine;
@@ -5,12 +6,14 @@ using UnityEngine;
 public class Player : NetworkBehaviour
 {
     [SerializeField] private Ball _prefabBall;
+    [SerializeField] private GameObject _bodyGameObject;
 
     [Networked] private TickTimer delay { get; set; }
-    [Networked] public bool spawnedProjectile { get; set; }
+    [Networked] private TickTimer respawnTime { get; set; }
+    [Networked] private NetworkBool isDead { get; set; }
+    [Networked] public NetworkBool spawnedProjectile { get; set; }
 
-    public Material _material;
-
+    private Material _material;
     private TextMeshProUGUI _message;
     private ChangeDetector _changeDetector;
     private NetworkCharacterController _cc;
@@ -30,7 +33,7 @@ public class Player : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (GetInput(out NetworkInputData data))
+        if (GetInput(out NetworkInputData data) && isDead == false)
         {
             data.direction.Normalize();
             _cc.Move(5 * data.direction * Runner.DeltaTime);
@@ -53,6 +56,12 @@ public class Player : NetworkBehaviour
                     spawnedProjectile = !spawnedProjectile;
                 }
             }
+        }
+
+        if (isDead && respawnTime.ExpiredOrNotRunning(Runner))
+        {
+            RPC_SetObjectState(true);
+            isDead = false;
         }
     }
 
@@ -81,7 +90,18 @@ public class Player : NetworkBehaviour
 
     public void OnTakeDamage()
     {
-        Runner.Despawn(Object);
+        respawnTime = TickTimer.CreateFromSeconds(Runner, 2f);
+        RPC_SetObjectState(false);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
+    public void RPC_SetObjectState(bool state)
+    {
+        if (_bodyGameObject)
+        {
+            _bodyGameObject.SetActive(state);
+            isDead = true;
+        }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]

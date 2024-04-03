@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
@@ -9,7 +10,8 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 {
     [SerializeField] private NetworkPrefabRef _playerPrefab;
     private readonly Dictionary<PlayerRef, NetworkObject> _spawnCharacters = new();
-    
+
+    private CharacterNetworkManager _characterManager;
     private NetworkRunner _runner;
     private bool _mouseButton0;
 

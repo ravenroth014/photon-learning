@@ -198,6 +198,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefabBall: {fileID: 794478133853059803, guid: a1a4b74334f447c43a6f11d81894265d, type: 3}
+  _bodyGameObject: {fileID: 8830033783165546472}
+  _spawnedProjectile:
+    _value: 0
+  _material: {fileID: 0}
 --- !u!114 &5860543168101004983
 MonoBehaviour:
   m_ObjectHideFlags: 0

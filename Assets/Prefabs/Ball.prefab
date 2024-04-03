@@ -98,7 +98,6 @@ GameObject:
   - component: {fileID: 794478133853059803}
   - component: {fileID: 155862675049770765}
   - component: {fileID: 7695795514619950413}
-  - component: {fileID: 2131181770000259112}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -229,18 +228,3 @@ MonoBehaviour:
   Offset: {x: 0, y: 0, z: 0}
   Root: {fileID: 155862675049770765}
   GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
---- !u!114 &2131181770000259112
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8615158807602062230}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -49887739, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BVHDepth: 0
-  BVHNodes: 0
-  TotalHitboxes: 0
