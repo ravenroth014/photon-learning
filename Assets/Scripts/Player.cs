@@ -54,6 +54,14 @@ public class Player : NetworkBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (Object.HasInputAuthority && Input.GetKeyDown(KeyCode.R))
+        {
+
+        }
+    }
+
     public override void Render()
     {
         foreach (var change in _changeDetector.DetectChanges(this))
