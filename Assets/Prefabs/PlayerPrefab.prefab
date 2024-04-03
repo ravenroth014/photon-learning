@@ -201,7 +201,6 @@ MonoBehaviour:
   _bodyGameObject: {fileID: 8830033783165546472}
   _spawnedProjectile:
     _value: 0
-  _material: {fileID: 0}
 --- !u!114 &5860543168101004983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,7 +214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Config: 3
-  BroadRadius: 1
+  BroadRadius: 0.63
   Offset: {x: 0, y: 0, z: 0}
   GizmosColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   Hitboxes:
@@ -233,7 +232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 2
-  SphereRadius: 1
+  SphereRadius: 0.63
   CapsuleRadius: 0
   BoxExtents: {x: 0, y: 0, z: 0}
   CapsuleExtents: 0

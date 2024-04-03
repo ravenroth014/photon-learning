@@ -41,18 +41,12 @@ public class Player : NetworkBehaviour
             if (data.direction.sqrMagnitude > 0)
                 _forward = data.direction;
 
-            if (HasInputAuthority && delay.ExpiredOrNotRunning(Runner))
+            if (HasStateAuthority && delay.ExpiredOrNotRunning(Runner))
             {
                 if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
                 {
                     delay = TickTimer.CreateFromSeconds(Runner, 0.5f);
-                    Runner.Spawn(_prefabBall, transform.position + _forward, Quaternion.LookRotation(_forward),
-                        Object.InputAuthority,
-                        (runner, o) =>
-                        {
-                            // Initialize the Ball before synchronizing it.
-                            o.GetComponent<Ball>().Init(this);
-                        });
+                    Runner.Spawn(_prefabBall, transform.position + _forward, Quaternion.LookRotation(_forward), Object.InputAuthority, OnBeforeSpawnBall);
                     spawnedProjectile = !spawnedProjectile;
                 }
             }
@@ -60,7 +54,8 @@ public class Player : NetworkBehaviour
 
         if (isDead && respawnTime.ExpiredOrNotRunning(Runner))
         {
-            RPC_SetObjectState(true);
+            if (HasStateAuthority)
+                RPC_SetObjectState(true);
             isDead = false;
         }
     }
@@ -75,13 +70,18 @@ public class Player : NetworkBehaviour
 
     public override void Render()
     {
-        foreach (var change in _changeDetector.DetectChanges(this))
+        foreach (var change in _changeDetector.DetectChanges(this, out var previousBuffer, out var currentBuffer))
         {
             switch (change)
             {
                 case nameof(spawnedProjectile):
                     _material.color = Color.white;
                     break;
+                //case nameof(isDead):
+                //    {
+                //        SetObjectState(!isDead);
+                //        break;
+                //    }
             }
         }
 
@@ -91,17 +91,33 @@ public class Player : NetworkBehaviour
     public void OnTakeDamage()
     {
         respawnTime = TickTimer.CreateFromSeconds(Runner, 2f);
-        RPC_SetObjectState(false);
+        if (HasStateAuthority)
+            RPC_SetObjectState(false);
+        isDead = true;
     }
+
+    private void SetObjectState(bool state)
+    {
+        _bodyGameObject.SetActive(state);
+    }
+
+    private void OnBeforeSpawnBall(NetworkRunner runner, NetworkObject networkObject)
+    {
+        // Initialize the Ball before synchronizing it.
+        networkObject.GetComponent<Ball>().Init(this);
+    }
+
+    //[Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
+    //public void RPC_RelaySetObjectState(bool state)
+    //{
+    //    RPC_SetObjectState(state);
+    //}
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
     public void RPC_SetObjectState(bool state)
     {
         if (_bodyGameObject)
-        {
             _bodyGameObject.SetActive(state);
-            isDead = true;
-        }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
