@@ -107,12 +107,6 @@ public class Player : NetworkBehaviour
         networkObject.GetComponent<Ball>().Init(this);
     }
 
-    //[Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
-    //public void RPC_RelaySetObjectState(bool state)
-    //{
-    //    RPC_SetObjectState(state);
-    //}
-
     [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
     public void RPC_SetObjectState(bool state)
     {
