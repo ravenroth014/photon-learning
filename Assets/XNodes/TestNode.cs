@@ -6,13 +6,7 @@ using XNode;
 [CreateNodeMenu("Test/Test float node")]
 public class TestNode : Node
 {
-    [Input] public float A;
-    [Input] public float B;
-
-    public float C;
-
-    [Output] public float D;
-    [Output] public float E;
+	protected TestGraph Graph => graph as TestGraph;
 
 	// Use this for initialization
 	protected override void Init() {

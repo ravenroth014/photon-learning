@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Fusion;
 using TMPro;
 using UnityEngine;
@@ -12,12 +13,15 @@ public class Player : NetworkBehaviour
     [Networked] private TickTimer respawnTime { get; set; }
     [Networked] private NetworkBool isDead { get; set; }
     [Networked] public NetworkBool spawnedProjectile { get; set; }
+    [Networked,OnChangedRender(nameof(OnChange))] private int _count { get; set; } = 0;
 
     private Material _material;
     private TextMeshProUGUI _message;
     private ChangeDetector _changeDetector;
     private NetworkCharacterController _cc;
     private Vector3 _forward;
+
+    private List<int> _dummyList = new();
 
     private void Awake()
     {
@@ -50,6 +54,11 @@ public class Player : NetworkBehaviour
                     spawnedProjectile = !spawnedProjectile;
                 }
             }
+
+            if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
+            {
+                _count++;
+            }
         }
 
         if (isDead && respawnTime.ExpiredOrNotRunning(Runner))
@@ -58,6 +67,11 @@ public class Player : NetworkBehaviour
             //    RPC_SetObjectState(true);
             isDead = false;
         }
+
+        // foreach (string changeProperty in _changeDetector.DetectChanges(this, out NetworkBehaviourBuffer previousBuffer, out NetworkBehaviourBuffer currentBuffer))
+        // {
+        //     OnLogicChangeDetected(changeProperty, previousBuffer, currentBuffer);
+        // }
     }
 
     private void Update()
@@ -70,7 +84,7 @@ public class Player : NetworkBehaviour
 
     public override void Render()
     {
-        foreach (var change in _changeDetector.DetectChanges(this, out var previousBuffer, out var currentBuffer))
+        foreach (var change in _changeDetector.DetectChanges(this, out NetworkBehaviourBuffer previousBuffer, out NetworkBehaviourBuffer currentBuffer))
         {
             switch (change)
             {
@@ -128,15 +142,44 @@ public class Player : NetworkBehaviour
             _message = UIManager.Instance.OutputText;
         }
 
+        string dummyTest = _count <= 0 ? "NONE" : _dummyList[^1].ToString();
+
         if (messageSource == Runner.LocalPlayer)
         {
-            message = $"You said: {message}\n";
+            message = $"You said: {message}, dummy latest no. : {dummyTest}\n";
         }
         else
         {
-            message = $"Some other player said: {message}\n";
+            message = $"Some other player said: {message}, dummy latest no. : {dummyTest}\n";
         }
 
         _message.text += message;
+    }
+
+    private void OnLogicChangeDetected(string changeProperties, NetworkBehaviourBuffer previousBuffer, NetworkBehaviourBuffer currentBuffer)
+    {
+        Debug.Log($"{Object.InputAuthority.ToString()}");
+        
+        switch (changeProperties)
+        {
+            case nameof(_count):
+            {
+                PropertyReader<int> reader = GetPropertyReader<int>(changeProperties);
+                (int previous, int current) = reader.Read(previousBuffer, currentBuffer);
+                
+                if (previous < current)
+                {
+                    int randNumber = Random.Range(0, 99);
+                    _dummyList.Add(randNumber);
+                }
+            }
+                break;
+        }
+    }
+
+    private void OnChange()
+    {
+        int randNumber = Random.Range(0, 99);
+        _dummyList.Add(randNumber);
     }
 }
