@@ -8,12 +8,16 @@ public class Player : NetworkBehaviour
 {
     [SerializeField] private Ball _prefabBall;
     [SerializeField] private GameObject _bodyGameObject;
+    [SerializeField] private PerkSettingObject _perkSetting;
 
     [Networked] private TickTimer delay { get; set; }
     [Networked] private TickTimer respawnTime { get; set; }
     [Networked] private NetworkBool isDead { get; set; }
     [Networked] public NetworkBool spawnedProjectile { get; set; }
     [Networked,OnChangedRender(nameof(OnChange))] private int _count { get; set; } = 0;
+    
+    [Networked] private int PerkIndex { get; set; } = -1;
+    [Networked] private int RandomNo { get; set; } = -1;
 
     private Material _material;
     private TextMeshProUGUI _message;
@@ -28,6 +32,7 @@ public class Player : NetworkBehaviour
         _cc = GetComponent<NetworkCharacterController>();
         _forward = transform.forward;
         _material = GetComponentInChildren<MeshRenderer>().material;
+
     }
 
     public override void Spawned()
@@ -53,12 +58,18 @@ public class Player : NetworkBehaviour
                     Runner.Spawn(_prefabBall, transform.position + _forward, Quaternion.LookRotation(_forward), Object.InputAuthority, OnBeforeSpawnBall);
                     spawnedProjectile = !spawnedProjectile;
                 }
+
+                if (data.buttons.IsSet(NetworkInputData.KEY_X))
+                {
+                    PerkIndex = Random.Range(0, _perkSetting.PerkSettingList.Count);
+                    RandomNo = Random.Range(0, 1000);
+                }
             }
 
-            if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
-            {
-                _count++;
-            }
+            // if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
+            // {
+            //     _count++;
+            // }
         }
 
         if (isDead && respawnTime.ExpiredOrNotRunning(Runner))
@@ -96,6 +107,19 @@ public class Player : NetworkBehaviour
                         SetObjectState(!isDead);
                         break;
                     }
+                case nameof(PerkIndex):
+                {
+                    if (_message == null)
+                    {
+                        _message = UIManager.Instance.OutputText;
+                    }
+                   
+                    Random.InitState(RPC_Manager.Instance.RandomSeed);
+                    string message = Random.Range(0, 1000).ToString();
+                    _message.text = message;
+                    
+                    break;
+                }
             }
         }
 
@@ -129,13 +153,13 @@ public class Player : NetworkBehaviour
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
-    public void RPC_SendMessage(string message, RpcInfo info = default)
+    private void RPC_SendMessage(string message, RpcInfo info = default)
     {
         RPC_RelayMessage(message, info.Source);
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All, HostMode = RpcHostMode.SourceIsServer)]
-    public void RPC_RelayMessage(string message, PlayerRef messageSource)
+    private void RPC_RelayMessage(string message, PlayerRef messageSource)
     {
         if (_message == null)
         {
@@ -153,7 +177,7 @@ public class Player : NetworkBehaviour
             message = $"Some other player said: {message}, dummy latest no. : {dummyTest}\n";
         }
 
-        _message.text += message;
+        _message.text = message;
     }
 
     private void OnLogicChangeDetected(string changeProperties, NetworkBehaviourBuffer previousBuffer, NetworkBehaviourBuffer currentBuffer)
