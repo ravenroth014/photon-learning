@@ -21,6 +21,7 @@ public class Player : NetworkBehaviour
     [Networked] private int PerkIndex { get; set; } = -1;
     [Networked] private int RandomNo { get; set; } = -1;
     [Networked] private PerkData PerkData { get; set; }
+    [Networked, Capacity(19)] private NetworkArray<byte> PerkDataList => default;
 
     private Material _material;
     private TextMeshProUGUI _message;
