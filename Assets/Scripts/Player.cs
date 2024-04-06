@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Player : NetworkBehaviour
 {
@@ -18,6 +20,7 @@ public class Player : NetworkBehaviour
     
     [Networked] private int PerkIndex { get; set; } = -1;
     [Networked] private int RandomNo { get; set; } = -1;
+    [Networked] private PerkData PerkData { get; set; }
 
     private Material _material;
     private TextMeshProUGUI _message;
@@ -61,8 +64,13 @@ public class Player : NetworkBehaviour
 
                 if (data.buttons.IsSet(NetworkInputData.KEY_X))
                 {
-                    PerkIndex = Random.Range(0, _perkSetting.PerkSettingList.Count);
-                    RandomNo = Random.Range(0, 1000);
+                    // PerkIndex = Random.Range(0, _perkSetting.PerkSettingList.Count);
+                    // RandomNo = Random.Range(0, 1000);
+
+                    int updateRuleSet = PerkData.PerkTree1;
+                    updateRuleSet |= 1 << Random.Range(0, 11);
+
+                    PerkData = new PerkData(updateRuleSet);
                 }
             }
 
@@ -107,19 +115,30 @@ public class Player : NetworkBehaviour
                         SetObjectState(!isDead);
                         break;
                     }
-                case nameof(PerkIndex):
+                case nameof(PerkData):
                 {
                     if (_message == null)
                     {
                         _message = UIManager.Instance.OutputText;
                     }
-                   
-                    Random.InitState(RPC_Manager.Instance.RandomSeed);
-                    string message = Random.Range(0, 1000).ToString();
-                    _message.text = message;
+
+                    _message.text = Convert.ToString(PerkData.PerkTree1, 2);
                     
                     break;
                 }
+                // case nameof(PerkIndex):
+                // {
+                //     if (_message == null)
+                //     {
+                //         _message = UIManager.Instance.OutputText;
+                //     }
+                //    
+                //     Random.InitState(RPC_Manager.Instance.RandomSeed);
+                //     string message = Random.Range(0, 1000).ToString();
+                //     _message.text = message;
+                //     
+                //     break;
+                // }
             }
         }
 

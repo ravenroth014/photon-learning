@@ -17,3 +17,14 @@ public struct PerkSetting : INetworkStruct
     public int MaxHp;
     public int Defense;
 }
+
+
+public struct PerkData : INetworkStruct
+{
+    public int PerkTree1;
+
+    public PerkData(int perkTree1)
+    {
+        PerkTree1 = perkTree1;
+    }
+}
