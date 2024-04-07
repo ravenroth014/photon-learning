@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
@@ -20,6 +19,8 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     private int _randomSeed;
 
+    private Action _onServerShutdown;
+
     private void Update()
     {
         _mouseButton0 = _mouseButton0 | Input.GetMouseButton(0);
@@ -29,7 +30,6 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     async void StartGame(GameMode mode)
     {
         _runner = gameObject.AddComponent<NetworkRunner>();
-        _runner.ProvideInput = mode != GameMode.Server;
 
         var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
         var sceneInfo = new NetworkSceneInfo();
@@ -49,9 +49,18 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         });
     }
 
+    private void LeaveGame()
+    {
+        if (_runner != null)
+        {
+            _runner.Shutdown();
+            _runner = null;
+        }
+    }
+
     private void OnGUI()
     {
-        if (_runner == null)
+        if (_runner == null || _runner.IsRunning == false)
         {
             if (GUI.Button(new Rect(0, 0, 200, 40), "Host"))
             {
@@ -63,6 +72,19 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
                 StartGame(GameMode.Client);
             }
         }
+
+        if (_runner != null && _runner.IsRunning)
+        {
+            if (GUI.Button(new Rect(0, 0, 200, 40), "Leave"))
+            {
+                LeaveGame();
+            }
+        }
+    }
+
+    public void SetOnShutDownCallback(Action callback)
+    {
+        _onServerShutdown = callback;
     }
     
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
@@ -132,6 +154,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
+        _onServerShutdown?.Invoke();
     }
 
     public void OnConnectedToServer(NetworkRunner runner)
@@ -140,6 +163,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     {
+        Debug.Log("Test 1");
     }
 
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)

@@ -11,6 +11,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private Ball _prefabBall;
     [SerializeField] private GameObject _bodyGameObject;
     [SerializeField] private PerkSettingObject _perkSetting;
+    [SerializeField] private GameObject _processObject;
 
     [Networked] private TickTimer delay { get; set; }
     [Networked] private TickTimer respawnTime { get; set; }
@@ -22,6 +23,7 @@ public class Player : NetworkBehaviour
     [Networked] private int RandomNo { get; set; } = -1;
     [Networked] private PerkData PerkData { get; set; }
     [Networked, Capacity(19)] private NetworkArray<byte> PerkDataList => default;
+    [Networked] private NetworkRNG test { get; set; }
 
     private Material _material;
     private TextMeshProUGUI _message;
@@ -36,12 +38,14 @@ public class Player : NetworkBehaviour
         _cc = GetComponent<NetworkCharacterController>();
         _forward = transform.forward;
         _material = GetComponentInChildren<MeshRenderer>().material;
-
+        
     }
 
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        test = new NetworkRNG(Runner.Tick);
+        CurrentTick = 0;
     }
 
     public override void FixedUpdateNetwork()
@@ -72,6 +76,11 @@ public class Player : NetworkBehaviour
                     updateRuleSet |= 1 << Random.Range(0, 11);
 
                     PerkData = new PerkData(updateRuleSet);
+
+                    if (_processObject.HasComponent<NewScript>() == false)
+                    {
+                        _processObject.AddComponent<NewScript>();
+                    }
                 }
             }
 
