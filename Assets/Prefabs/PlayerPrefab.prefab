@@ -233,6 +233,7 @@ MonoBehaviour:
   _bodyGameObject: {fileID: 8830033783165546472}
   _perkSetting: {fileID: 11400000, guid: 6a1df75280e632f4ab76a873c8c19894, type: 2}
   _processObject: {fileID: 1594874669110050978}
+  _testGraph: {fileID: 11400000, guid: 2a5e0f3eaeb0b0246b3b4c0f598b7660, type: 2}
   _spawnedProjectile:
     _value: 0
 --- !u!114 &5860543168101004983

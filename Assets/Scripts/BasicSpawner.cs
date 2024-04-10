@@ -16,6 +16,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     private NetworkRunner _runner;
     private bool _mouseButton0;
     private bool _keyXButton;
+    private bool _keyPButton;
 
     private int _randomSeed;
 
@@ -23,8 +24,9 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
     private void Update()
     {
-        _mouseButton0 = _mouseButton0 | Input.GetMouseButton(0);
-        _keyXButton = _keyXButton | Input.GetKeyDown(KeyCode.X);
+        _mouseButton0 |= Input.GetMouseButton(0);
+        _keyXButton |= Input.GetKeyDown(KeyCode.X);
+        _keyPButton |= Input.GetKeyDown(KeyCode.P);
     }
     
     async void StartGame(GameMode mode)
@@ -101,7 +103,12 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
         {
             // Create a unique position for the player
             Vector3 spawnPosition = new Vector3((player.RawEncoded % runner.Config.Simulation.PlayerCount) * 1.1f, 1, 0);
-            NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
+            NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player,
+                (networkRunner, obj) =>
+                {
+                    var script = obj.GetComponent<Player>();
+                    script.Init(player);
+                } );
             
             // Keep track of the player avatars for easy access
             _spawnCharacters.Add(player, networkPlayerObject);
@@ -141,9 +148,11 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
         data.buttons.Set(NetworkInputData.MOUSEBUTTON0, _mouseButton0);
         data.buttons.Set(NetworkInputData.KEY_X, _keyXButton);
+        data.buttons.Set(NetworkInputData.KEY_P, _keyPButton);
         
         _mouseButton0 = false;
         _keyXButton = false;
+        _keyPButton = false;
         
         input.Set(data);
     }

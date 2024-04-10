@@ -12,6 +12,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private GameObject _bodyGameObject;
     [SerializeField] private PerkSettingObject _perkSetting;
     [SerializeField] private GameObject _processObject;
+    [SerializeField] private TestGraph _testGraph;
 
     [Networked] private TickTimer delay { get; set; }
     [Networked] private TickTimer respawnTime { get; set; }
@@ -24,7 +25,9 @@ public class Player : NetworkBehaviour
     [Networked] private PerkData PerkData { get; set; }
     [Networked, Capacity(19)] private NetworkArray<byte> PerkDataList => default;
     [Networked] private NetworkRNG test { get; set; }
-
+    [Networked] private int NodeTask { get; set; } = 0;
+    [Networked] private PlayerRef PlayerID { get; set; }
+    
     private Material _material;
     private TextMeshProUGUI _message;
     private ChangeDetector _changeDetector;
@@ -45,7 +48,12 @@ public class Player : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         test = new NetworkRNG(Runner.Tick);
-        CurrentTick = 0;
+        //CurrentTick = 0;
+    }
+
+    public void Init(PlayerRef playerRef)
+    {
+        PlayerID = playerRef;
     }
 
     public override void FixedUpdateNetwork()
@@ -81,6 +89,11 @@ public class Player : NetworkBehaviour
                     {
                         _processObject.AddComponent<NewScript>();
                     }
+                }
+
+                if (data.buttons.IsSet(NetworkInputData.KEY_P))
+                {
+                    _testGraph.Node.Execute(this);
                 }
             }
 
@@ -134,6 +147,16 @@ public class Player : NetworkBehaviour
 
                     _message.text = Convert.ToString(PerkData.PerkTree1, 2);
                     
+                    break;
+                }
+                case nameof(NodeTask):
+                {
+                    if (_message == null)
+                    {
+                        _message = UIManager.Instance.OutputText;
+                    }
+
+                    _message.text += $"Player : {PlayerID.ToString()}'s task is finished.\n";
                     break;
                 }
                 // case nameof(PerkIndex):
@@ -234,5 +257,10 @@ public class Player : NetworkBehaviour
     {
         int randNumber = Random.Range(0, 99);
         _dummyList.Add(randNumber);
+    }
+
+    public void FinishExecuteTask()
+    {
+        NodeTask++;
     }
 }
