@@ -36,6 +36,8 @@ public class Player : NetworkBehaviour
 
     private List<int> _dummyList = new();
 
+    private TestNodeObject _testNodeObject;
+
     private void Awake()
     {
         _cc = GetComponent<NetworkCharacterController>();
@@ -48,6 +50,7 @@ public class Player : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         test = new NetworkRNG(Runner.Tick);
+        _testNodeObject = _testGraph.Node.GetNodeObject(Runner);
         //CurrentTick = 0;
     }
 
@@ -71,7 +74,8 @@ public class Player : NetworkBehaviour
                 if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
                 {
                     delay = TickTimer.CreateFromSeconds(Runner, 0.5f);
-                    Runner.Spawn(_prefabBall, transform.position + _forward, Quaternion.LookRotation(_forward), Object.InputAuthority, OnBeforeSpawnBall);
+                    _testNodeObject.SpawnBall(_forward, Object.InputAuthority, this);
+                    // Runner.Spawn(_prefabBall, transform.position + _forward, Quaternion.LookRotation(_forward), Object.InputAuthority, OnBeforeSpawnBall);
                     spawnedProjectile = !spawnedProjectile;
                 }
 

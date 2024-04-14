@@ -13,7 +13,9 @@ public class Ball : NetworkBehaviour
         transform.position += 5 * transform.forward * Runner.DeltaTime;
         
         if (CheckOnHit(Runner, transform.forward) || life.Expired(Runner))
+        {
             Runner.Despawn(Object);
+        }
     }
 
     public void Init(Player owner)
