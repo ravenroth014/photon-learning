@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Fusion;
 using TMPro;
 using UnityEngine;
@@ -118,6 +119,7 @@ public class Player : NetworkBehaviour
         // {
         //     OnLogicChangeDetected(changeProperty, previousBuffer, currentBuffer);
         // }
+        
     }
 
     private void Update()
@@ -180,6 +182,11 @@ public class Player : NetworkBehaviour
         }
 
         _material.color = Color.Lerp(_material.color, Color.blue, Time.deltaTime);
+
+        float renderTime = Object.IsProxy ? Runner.RemoteRenderTime : Runner.LocalRenderTime;
+        float floatTick = renderTime / Runner.DeltaTime;
+
+        UIManager.Instance.Output2Text.text = floatTick.ToString(CultureInfo.InvariantCulture);
     }
 
     public void OnTakeDamage()

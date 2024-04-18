@@ -1,3 +1,4 @@
+using System.Globalization;
 using Fusion;
 using UnityEngine;
 
@@ -16,6 +17,16 @@ public class Ball : NetworkBehaviour
         {
             Runner.Despawn(Object);
         }
+    }
+
+    public override void Render()
+    {
+        base.Render();
+        
+        float renderTime = Object.IsProxy ? Runner.RemoteRenderTime : Runner.LocalRenderTime;
+        float floatTick = renderTime / Runner.DeltaTime;
+
+        UIManager.Instance.Output3Text.text = floatTick.ToString(CultureInfo.InvariantCulture);
     }
 
     public void Init(Player owner)
