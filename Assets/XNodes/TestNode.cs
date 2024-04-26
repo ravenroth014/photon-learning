@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fusion;
 using UnityEngine;
@@ -11,10 +9,38 @@ public class TestNode : Node
 {
 	public Ball _prefabBall;
 
-	public TestNodeObject GetNodeObject(NetworkRunner runner)
+	[Output] public RequestRandomNode Output;
+
+	private readonly List<RequestRandomNode> _requestList = new();
+	
+	public TestNodeObject GetNodeObject(NetworkRunner runner, Player player)
 	{
 		TestNodeObject newObject = new TestNodeObject(_prefabBall, runner);
+
+		NodePort outputPort = GetOutputPort(nameof(Output));
+
+		if (outputPort is { ConnectionCount: <= 0 })
+			return newObject;
+
+		for (int index = 0; index < outputPort.ConnectionCount; index++)
+		{
+			RequestRandomNode connection = outputPort.GetConnection(index).node as RequestRandomNode;
+			
+			if (connection != null)
+			{
+				connection.Init(player);
+				_requestList.Add(connection);
+			}
+		}
+		
 		return newObject;
+	}
+
+	public void ExecuteRandomRequest()
+	{
+		if (_requestList is {Count: <= 0}) return;
+		
+		_requestList.ForEach(request => request.RequestRandomValue());
 	}
 	
 	// Use this for initialization

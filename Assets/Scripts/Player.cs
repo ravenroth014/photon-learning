@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Fusion;
 using TMPro;
 using UnityEngine;
@@ -22,12 +23,13 @@ public class Player : NetworkBehaviour
     [Networked,OnChangedRender(nameof(OnChange))] private int _count { get; set; } = 0;
     
     [Networked] private int PerkIndex { get; set; } = -1;
-    [Networked] private int RandomNo { get; set; } = -1;
+    [Networked] private int RandomNo { get; set; } = 0;
     [Networked] private PerkData PerkData { get; set; }
     [Networked, Capacity(19)] private NetworkArray<byte> PerkDataList => default;
     [Networked] private NetworkRNG test { get; set; }
     [Networked] private int NodeTask { get; set; } = 0;
     [Networked] private PlayerRef PlayerID { get; set; }
+    [Networked, Capacity(16)] private NetworkArray<RandomIntRequest> RandomIntRequestList => default;
     
     private Material _material;
     private TextMeshProUGUI _message;
@@ -38,20 +40,21 @@ public class Player : NetworkBehaviour
     private List<int> _dummyList = new();
 
     private TestNodeObject _testNodeObject;
+    private readonly Dictionary<string, RequestRandomLogic> _randomDict = new();
+    private readonly List<string> _randomKeyList = new();
 
     private void Awake()
     {
         _cc = GetComponent<NetworkCharacterController>();
         _forward = transform.forward;
         _material = GetComponentInChildren<MeshRenderer>().material;
-        
     }
 
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         test = new NetworkRNG(Runner.Tick);
-        _testNodeObject = _testGraph.Node.GetNodeObject(Runner);
+        _testNodeObject = _testGraph.Node.GetNodeObject(Runner, this);
         //CurrentTick = 0;
     }
 
@@ -96,16 +99,20 @@ public class Player : NetworkBehaviour
                     }
                 }
 
-                if (data.buttons.IsSet(NetworkInputData.KEY_P))
-                {
-                    _testGraph.Node.Execute(this);
-                }
+                
+                
             }
 
             // if (data.buttons.IsSet(NetworkInputData.MOUSEBUTTON0))
             // {
             //     _count++;
             // }
+            
+            if (data.buttons.IsSet(NetworkInputData.KEY_P))
+            {
+                //_testGraph.Node.Execute(this);
+                _testGraph.Node.ExecuteRandomRequest();
+            }
         }
 
         if (isDead && respawnTime.ExpiredOrNotRunning(Runner))
@@ -119,7 +126,10 @@ public class Player : NetworkBehaviour
         // {
         //     OnLogicChangeDetected(changeProperty, previousBuffer, currentBuffer);
         // }
+
         
+        
+        GenerateRandomNumber();
     }
 
     private void Update()
@@ -127,6 +137,7 @@ public class Player : NetworkBehaviour
         if (Object.HasInputAuthority && Input.GetKeyDown(KeyCode.R))
         {
             RPC_SendMessage("Testing");
+            //_testGraph.Node.ExecuteRandomRequest();
         }
     }
 
@@ -187,6 +198,8 @@ public class Player : NetworkBehaviour
         float floatTick = renderTime / Runner.DeltaTime;
 
         UIManager.Instance.Output2Text.text = floatTick.ToString(CultureInfo.InvariantCulture);
+
+        SendRandomValue();
     }
 
     public void OnTakeDamage()
@@ -274,4 +287,75 @@ public class Player : NetworkBehaviour
     {
         NodeTask++;
     }
+
+    public void RegisRandomLogic(string key, RequestRandomLogic logicNode)
+    {
+        if (_randomDict.TryAdd(key, logicNode) == false)
+            _randomDict[key] = logicNode;
+        if (_randomKeyList.Contains(key) == false)
+            _randomKeyList.Add(key);
+    }
+
+    public void RequestRandomNumber(string randomKey, RandomIntRequest request)
+    {
+        int logicIndex = _randomKeyList.Contains(randomKey) ? _randomKeyList.IndexOf(randomKey) : -1;
+        
+        if (logicIndex == -1)
+            return;
+        
+        int index = RandomNo % RandomIntRequestList.Length;
+        request.LogicIndex = logicIndex;
+        RandomIntRequestList.Set(index, request);
+        RandomNo++;
+    }
+
+    private void GenerateRandomNumber()
+    {
+        if (Object.IsProxy) return;
+        
+        for (int index = 0; index < RandomIntRequestList.Length; index++)
+        {
+            var currentValue = RandomIntRequestList.Get(index);
+            if (currentValue.IsRequesting)
+            {
+                currentValue.ResultValue = Random.Range(currentValue.MinValue, currentValue.MaxValue);
+                currentValue.IsRequesting = false;
+                currentValue.IsObtainedRandomValue = true;
+                RandomIntRequestList.Set(index, currentValue);
+            }
+        }
+    }
+
+    private void SendRandomValue()
+    {
+        for (int index = 0; index < RandomIntRequestList.Length; index++)
+        {
+            var currentValue = RandomIntRequestList.Get(index);
+            if (currentValue.IsObtainedRandomValue == false) continue;
+            if (currentValue.LogicIndex <= -1) continue;
+
+            string key = _randomKeyList[currentValue.LogicIndex];
+
+            if (_randomDict.TryGetValue(key, out var value))
+            {
+                value.ReceiveRandomValue(currentValue.ResultValue);
+                currentValue.IsObtainedRandomValue = false;
+                currentValue.IsRequesting = false;
+                currentValue.LogicIndex = -1;
+                RandomIntRequestList.Set(index, currentValue);
+            }
+        }
+    }
+}
+
+[Serializable]
+public struct RandomIntRequest : INetworkStruct
+{
+    //public string RandomKey;
+    public bool IsRequesting;
+    public bool IsObtainedRandomValue;
+    public int MinValue;
+    public int MaxValue;
+    public int ResultValue;
+    public int LogicIndex;
 }

@@ -64,12 +64,12 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
     {
         if (_runner == null || _runner.IsRunning == false)
         {
-            if (GUI.Button(new Rect(0, 0, 200, 40), "Host"))
+            if (GUI.Button(new Rect(50, 0, 200, 40), "Host"))
             {
                 StartGame(GameMode.Host);
             }
 
-            if (GUI.Button(new Rect(0, 40, 200, 40), "Join"))
+            if (GUI.Button(new Rect(50, 40, 200, 40), "Join"))
             {
                 StartGame(GameMode.Client);
             }
@@ -77,7 +77,7 @@ public class BasicSpawner : MonoBehaviour, INetworkRunnerCallbacks
 
         if (_runner != null && _runner.IsRunning)
         {
-            if (GUI.Button(new Rect(0, 0, 200, 40), "Leave"))
+            if (GUI.Button(new Rect(50, 0, 200, 40), "Leave"))
             {
                 LeaveGame();
             }

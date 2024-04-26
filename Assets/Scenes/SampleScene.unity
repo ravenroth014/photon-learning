@@ -737,6 +737,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _serverObject: {fileID: 4335949390195306102, guid: 7a914e67812f71a42a7ce11a13b6592b, type: 3}
+  _testEnum: 2
 --- !u!1 &1713545778
 GameObject:
   m_ObjectHideFlags: 0
