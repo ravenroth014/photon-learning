@@ -1,8 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 
 public class NewScript : NetworkBehaviour
 {
+    
+    
+    
     private void Start()
     {
         string test = string.Empty;
@@ -21,5 +26,12 @@ public class NewScript : NetworkBehaviour
                 break;
             }
         }
+        
+        
+        
     }
+
+    
 }
+
+
